@@ -96,32 +96,6 @@ function init() {
 	// host.showPopupNotification("Launchkey Mini MK2 initialized!");
 }
 
-function showChannelLEDs()
-{
-	for (var p = 0; p < 8; ++p) {
-		updateChannelLEDs(p);
-	}
-}
-
-function updateChannelLEDs(idx)
-{
-	let channel = trackBank.getChannel(idx);
-	let slot = channel.clipLauncherSlotBank().getItemAt(0);
-
-	color = 0;
-	if (slot.isPlaying().get() || slot.isPlaybackQueued().get()) {
-		color = mkGreen(3);
-	}
-	else if (slot.isRecording().get() || slot.isRecordingQueued().get()) {
-		color = mkRed(3);
-	}
-	else {
-		color = slot.hasContent().get() ? mkRed(3) : 0;
-	}
-	setLED(CC.MIDI1.PAD1 + idx, color);
-	setLED(CC.MIDI1.PAD9 + idx, (channel.isStopped().get() || !channel.exists().get()) ? 0 : mkRed(3));
-}
-
 // Called when a short MIDI message is received on MIDI input port 0.
 function onMidi(midi, status, data1, data2)
 {
@@ -151,7 +125,6 @@ function onMidi(midi, status, data1, data2)
 	if (midi == 1 && status == STATUS.CONTROL && cc == CC.MIDI1.PREV_SCENE) {
 		if (val == 0) {
 			trackBank.scrollScenesUp();
-			updateSceneLEDs();
 		}
 		return;
 	}
@@ -160,7 +133,6 @@ function onMidi(midi, status, data1, data2)
 	if (midi == 1 && status == STATUS.CONTROL && cc == CC.MIDI1.NEXT_SCENE) {
 		if (val == 0) {
 			trackBank.scrollScenesDown();
-			updateSceneLEDs();
 		}
 		return;
 	}
@@ -277,6 +249,32 @@ function onMidi(midi, status, data1, data2)
 	}
 }
 
+function showChannelLEDs()
+{
+	for (var p = 0; p < 8; ++p) {
+		updateChannelLEDs(p);
+	}
+}
+
+function updateChannelLEDs(idx)
+{
+	let channel = trackBank.getChannel(idx);
+	let slot = channel.clipLauncherSlotBank().getItemAt(0);
+
+	color = 0;
+	if (slot.isPlaying().get() || slot.isPlaybackQueued().get()) {
+		color = mkGreen(3);
+	}
+	else if (slot.isRecording().get() || slot.isRecordingQueued().get()) {
+		color = mkRed(3);
+	}
+	else {
+		color = slot.hasContent().get() ? mkRed(3) : 0;
+	}
+	setLED(CC.MIDI1.PAD1 + idx, color);
+	setLED(CC.MIDI1.PAD9 + idx, (channel.isStopped().get() || !channel.exists().get()) ? 0 : mkRed(3));
+}
+
 function showPagesLEDs()
 {
 	if (!startPressed) {
@@ -309,11 +307,6 @@ function showStartLEDs()
 }
 
 function updateIndications()
-{
-	// TODO
-}
-
-function updateSceneLEDs()
 {
 	// TODO
 }
