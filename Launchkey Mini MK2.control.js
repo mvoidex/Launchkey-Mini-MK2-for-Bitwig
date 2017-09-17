@@ -49,7 +49,6 @@ function init() {
 	});
 
 	for (var p = 0; p < 8; ++p) {
-		trackBank.getChannel(p).getArm().markInterested();
 		trackBank.getChannel(p).exists().markInterested();
 		trackBank.getChannel(p).clipLauncherSlotBank().getItemAt(0).hasContent().markInterested();
 		trackBank.getChannel(p).clipLauncherSlotBank().getItemAt(0).isPlaying().markInterested();
