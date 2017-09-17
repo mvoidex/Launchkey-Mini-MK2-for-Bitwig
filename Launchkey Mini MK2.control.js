@@ -267,7 +267,13 @@ function onMidi(midi, status, data1, data2)
 	// knobs (in-control)
 	if (midi == 1 && status == STATUS.CONTROL && withinRange(cc, CC.KNOB1, CC.KNOB8)) {
 		parameter = remoteControlsPage.getParameter(cc - CC.KNOB1);
-		parameter.set(val, 128);
+		if (val == 63 || val == 64) {
+			// set good middle value
+			parameter.set(1, 3);
+		}
+		else {
+			parameter.set(val, 128);
+		}
 		return;
 	}
 }
