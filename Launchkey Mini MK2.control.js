@@ -155,7 +155,7 @@ function onMidi(midi, status, data1, data2)
 	if (midi == 1 && status == STATUS.MIDI1.PAD_ON && withinRange(cc, CC.MIDI1.PAD1, CC.MIDI1.PAD8)) {
 		if (startPressed) {
 			showPagesLEDs();
-			drumPadBank.scrollToChannel((cc - CC.MIDI1.PAD1) * 16 + 4);
+			remoteControlsPage.selectedPageIndex().set(cc - CC.MIDI1.PAD1);
 		}
 		else {
 			trackBank.getChannel(cc - CC.MIDI1.PAD1).clipLauncherSlotBank().launch(0);
@@ -167,7 +167,7 @@ function onMidi(midi, status, data1, data2)
 	if (midi == 1 && status == STATUS.MIDI1.PAD_ON && withinRange(cc, CC.MIDI1.PAD9, CC.MIDI1.PAD16)) {
 		if (startPressed) {
 			showPagesLEDs();
-			remoteControlsPage.selectedPageIndex().set(cc - CC.MIDI1.PAD9);
+			drumPadBank.scrollToChannel((cc - CC.MIDI1.PAD9) * 16 + 4);
 		}
 		else {
 			trackBank.getChannel(cc - CC.MIDI1.PAD9).clipLauncherSlotBank().stop();
@@ -282,8 +282,8 @@ function showPagesLEDs()
 	}
 	pagesShown = true;
 	clearLEDs(false);
-	setLED(CC.MIDI1.PAD1 + parseInt(drumPadBank.channelScrollPosition().get() / 16), mkYellow(3));
-	setLED(CC.MIDI1.PAD9 + remoteControlsPage.selectedPageIndex().get(), mkYellow(3));
+	setLED(CC.MIDI1.PAD1 + remoteControlsPage.selectedPageIndex().get(), mkYellow(3));
+	setLED(CC.MIDI1.PAD9 + parseInt(drumPadBank.channelScrollPosition().get() / 16), mkYellow(3));
 }
 
 function initializeLEDs()
