@@ -40,7 +40,22 @@ function init() {
 
 	trackBank.getClipLauncherScenes().itemCount().markInterested();
 
-	drumPadBank.channelScrollPosition().markInterested();
+	drumPadBank.channelScrollPosition().addValueObserver(function (on) {
+		bank = 0;
+		shifted = false;
+		if (on == 112) {
+			bank = 7;
+		}
+		else {
+			bank = parseInt((on - 4) / 16);
+			if ((on - 4) % 16) {
+				shifted = true;
+			}
+		}
+		if (shifted) {
+			drumPadBank.scrollToChannel(bank * 16 + 4);
+		}
+	});
 	remoteControlsPage.selectedPageIndex().markInterested();
 
 	transport.isPlaying().addValueObserver(function(on) {
