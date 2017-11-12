@@ -10,6 +10,8 @@ var STATUS = {
 		NOTE_OFF: 0x80,
 	},
 	MIDI1: {
+		IN_CONTROL: 0x90,
+
 		PAD_ON: 0x90,
 		PAD_OFF: 0x80,
 

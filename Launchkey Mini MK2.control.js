@@ -18,6 +18,7 @@ var startPressed = false;
 var pagesShown = false;
 
 let PAGES_SHOW_DELAY = 200;
+let GREETING_INTERVAL = 50;
 
 function init() {
 	transport = host.createTransport();
@@ -107,6 +108,8 @@ function init() {
 
 	initializeLEDs();
 	updateIndications();
+	inControlMode(true);
+	showGreeting();
 
 	// host.showPopupNotification("Launchkey Mini MK2 initialized!");
 }
@@ -264,6 +267,40 @@ function onMidi(midi, status, data1, data2)
 	}
 }
 
+function inControlMode(on)
+{
+	host.getMidiOutPort(1).sendMidi(STATUS.MIDI1.IN_CONTROL, CC.MIDI1.IN_CONTROL, on ? 127 : 0);
+}
+
+function showGreeting()
+{
+	function drawGreeting(values)
+	{
+		let value = values.pop();
+		let brightness = value ? value : 0;
+
+		let noColor = function (value) { return 0; };
+		let picUpper = [noColor, mkGreen, mkYellow, mkRed, mkRed, mkYellow, mkGreen, noColor];
+		let picLower = [mkGreen, mkYellow, mkRed, mkYellow, mkYellow, mkRed, mkYellow, mkGreen];
+
+		for (i in picUpper) {
+			setLED(CC.MIDI1.PAD1 + parseInt(i), picUpper[i](brightness));
+		}
+
+		for (i in picLower) {
+			setLED(CC.MIDI1.PAD9 + parseInt(i), picLower[i](brightness));
+		}
+
+		flushLEDs();
+
+		if (values.length > 0) {
+			host.scheduleTask(function () { drawGreeting(values); }, GREETING_INTERVAL);
+		}
+	}
+
+	drawGreeting([0,1,1,2,2,2,3,3,3,3,3,2,2,2,1,1]);
+}
+
 function showChannelLEDs()
 {
 	for (var p = 0; p < 8; ++p) {
@@ -312,6 +349,7 @@ function initializeLEDs()
 		setLED(p, 0);
 	}
 	showStartLEDs();
+	flushLEDs();
 }
 
 function showStartLEDs()
