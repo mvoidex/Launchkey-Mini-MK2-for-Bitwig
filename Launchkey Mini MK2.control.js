@@ -108,6 +108,8 @@ function init() {
 	noteInput.setShouldConsumeEvents(false);
 
 	updateIndications();
+	clearLEDs(true);
+	flushLEDs();
 	inControlMode(true);
 	showGreeting();
 	// initializeLEDs();
@@ -389,4 +391,5 @@ function flush()
 
 function exit()
 {
+	inControlMode(false);
 }
