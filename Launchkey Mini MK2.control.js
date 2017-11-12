@@ -287,13 +287,13 @@ function showGreeting()
 		let picUpper = [noColor, mkGreen, mkYellow, mkRed, mkRed, mkYellow, mkGreen, noColor];
 		let picLower = [mkGreen, mkYellow, mkRed, mkYellow, mkYellow, mkRed, mkYellow, mkGreen];
 
-		for (i in picUpper) {
-			setLED(CC.MIDI1.PAD1 + parseInt(i), picUpper[i](brightness));
-		}
+		picUpper.forEach(function (upper, index) {
+			setLED(CC.MIDI1.PAD1 + index, upper(brightness));
+		});
 
-		for (i in picLower) {
-			setLED(CC.MIDI1.PAD9 + parseInt(i), picLower[i](brightness));
-		}
+		picLower.forEach(function (lower, index) {
+			setLED(CC.MIDI1.PAD9 + index, lower(brightness));
+		});
 
 		flushLEDs();
 
