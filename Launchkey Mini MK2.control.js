@@ -59,10 +59,11 @@ function init() {
 	});
 	remoteControlsPage.selectedPageIndex().markInterested();
 
-	transport.isPlaying().addValueObserver(function(on) {
-		setLED(CC.MIDI1.PLAY, on ? mkRed(3) : 0);
-		setLED(CC.MIDI1.STOP, on ? 0 : mkRed(3));
-	});
+	transport.isPlaying().markInterested();
+	// transport.isPlaying().addValueObserver(function(on) {
+	// 	setLED(CC.MIDI1.PLAY, on ? mkRed(3) : 0);
+	// 	setLED(CC.MIDI1.STOP, on ? 0 : mkRed(3));
+	// });
 
 	for (var p = 0; p < 8; ++p) {
 		trackBank.getChannel(p).exists().markInterested();
@@ -106,10 +107,10 @@ function init() {
 	noteInput = host.getMidiInPort(0).createNoteInput("", "80????", "90????");
 	noteInput.setShouldConsumeEvents(false);
 
-	initializeLEDs();
 	updateIndications();
 	inControlMode(true);
 	showGreeting();
+	// initializeLEDs();
 
 	// host.showPopupNotification("Launchkey Mini MK2 initialized!");
 }
@@ -274,6 +275,7 @@ function inControlMode(on)
 
 function showGreeting()
 {
+	clearLEDs(true);
 	function drawGreeting(values)
 	{
 		let value = values.pop();
@@ -295,6 +297,9 @@ function showGreeting()
 
 		if (values.length > 0) {
 			host.scheduleTask(function () { drawGreeting(values); }, GREETING_INTERVAL);
+		}
+		else {
+			initializeLEDs();
 		}
 	}
 
@@ -348,15 +353,18 @@ function initializeLEDs()
 	for (var p = CC.MIDI1.PAD9; p <= CC.MIDI1.PAD16; ++p) {
 		setLED(p, 0);
 	}
+	showChannelLEDs();
 	showStartLEDs();
 	flushLEDs();
 }
 
 function showStartLEDs()
 {
-	playing = transport.isPlaying().get();
-	setLED(CC.MIDI1.PLAY, playing ? mkRed(3) : 0);
-	setLED(CC.MIDI1.STOP, playing ? 0 : mkRed(3));
+	setLED(CC.MIDI1.PLAY, mkGreen(3));
+	setLED(CC.MIDI1.STOP, mkRed(3));
+	// playing = transport.isPlaying().get();
+	// setLED(CC.MIDI1.PLAY, playing ? mkRed(3) : 0);
+	// setLED(CC.MIDI1.STOP, playing ? 0 : mkRed(3));
 }
 
 function updateIndications()
