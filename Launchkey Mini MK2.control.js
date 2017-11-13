@@ -20,6 +20,7 @@ var pagesShown = false;
 var clipHasContents = initArray(false, 8); // exists or not
 var clipStates = initArray(0, 8); // 0 - stopped, 1 - playing, 2 - recording
 var clipQueued = initArray(false, 8);
+var channelStopped = initArray(true, 8);
 var blink = false;
 
 var greeting = false;
@@ -73,6 +74,7 @@ function init() {
 	// 	setLED(CC.MIDI1.STOP, on ? 0 : mkRed(3));
 	// });
 
+	trackBank.channelCount().markInterested();
 	for (var p = 0; p < 8; ++p) {
 		trackBank.getChannel(p).exists().markInterested();
 		trackBank.getChannel(p).clipLauncherSlotBank().getItemAt(0).hasContent().markInterested();
@@ -89,7 +91,10 @@ function init() {
 		});
 		trackBank.getChannel(p).clipLauncherSlotBank().addHasContentObserver(function(slotIndex, has) {
 			clipHasContents[idx] = has;
-		})
+		});
+		trackBank.getChannel(p).isStopped().addValueObserver(function(stopped) {
+			channelStopped[idx] = stopped;
+		});
 	}
 
 	drumPadBank.channelScrollPosition().addValueObserver(function (on) {
@@ -336,18 +341,20 @@ function updateChannelLEDs(idx)
 	upper = 0;
 	lower = 0;
 
+	stopped = (idx >= trackBank.channelCount().get()) || channelStopped[idx];
+
 	switch (clipStates[idx]) {
 		case 0: // stopped
 			if (clipHasContents[idx]) {
 				upper = mkRed(3);
-				lower = 0;
 			}
+			lower = stopped ? 0 : mkRed(3);
 			break;
 		case 1: // playing
 			if (clipHasContents[idx]) {
 				upper = mkGreen(3);
-				lower = mkRed(3);
 			}
+			lower = stopped ? 0 : mkRed(3);
 			break;
 		case 2: // recording
 			upper = mkRed(3);
