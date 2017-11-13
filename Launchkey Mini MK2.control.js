@@ -17,8 +17,16 @@ host.addDeviceNameBasedDiscoveryPair(
 var startPressed = false;
 var pagesShown = false;
 
+var clipHasContents = initArray(false, 8); // exists or not
+var clipStates = initArray(0, 8); // 0 - stopped, 1 - playing, 2 - recording
+var clipQueued = initArray(false, 8);
+var blink = false;
+
+var greeting = false;
+
 let PAGES_SHOW_DELAY = 200;
 let GREETING_INTERVAL = 50;
+let BLINK_INTERVAL = 200;
 
 function init() {
 	transport = host.createTransport();
@@ -76,13 +84,11 @@ function init() {
 
 		let idx = p;
 		trackBank.getChannel(p).clipLauncherSlotBank().addPlaybackStateObserver(function(slotIndex, state, queued) {
-			updateChannelLEDs(idx);
+			clipStates[idx] = state;
+			clipQueued[idx] = queued;
 		});
 		trackBank.getChannel(p).clipLauncherSlotBank().addHasContentObserver(function(slotIndex, has) {
-			updateChannelLEDs(idx);
-		})
-		trackBank.getChannel(p).isStopped().addValueObserver(function(stopped) {
-			updateChannelLEDs(idx);
+			clipHasContents[idx] = has;
 		})
 	}
 
@@ -113,6 +119,8 @@ function init() {
 	inControlMode(true);
 	showGreeting();
 	// initializeLEDs();
+
+	blinkTimer();
 
 	// host.showPopupNotification("Launchkey Mini MK2 initialized!");
 }
@@ -275,8 +283,15 @@ function inControlMode(on)
 	host.getMidiOutPort(1).sendMidi(STATUS.MIDI1.IN_CONTROL, CC.MIDI1.IN_CONTROL, on ? 127 : 0);
 }
 
+function blinkTimer()
+{
+	blink = !blink;
+	host.scheduleTask(blinkTimer, BLINK_INTERVAL);
+}
+
 function showGreeting()
 {
+	greeting = true;
 	clearLEDs(true);
 	function drawGreeting(values)
 	{
@@ -295,12 +310,13 @@ function showGreeting()
 			setLED(CC.MIDI1.PAD9 + index, lower(brightness));
 		});
 
-		flushLEDs();
+		// flushLEDs();
 
 		if (values.length > 0) {
 			host.scheduleTask(function () { drawGreeting(values); }, GREETING_INTERVAL);
 		}
 		else {
+			greeting = false;
 			initializeLEDs();
 		}
 	}
@@ -317,21 +333,34 @@ function showChannelLEDs()
 
 function updateChannelLEDs(idx)
 {
-	let channel = trackBank.getChannel(idx);
-	let slot = channel.clipLauncherSlotBank().getItemAt(0);
+	upper = 0;
+	lower = 0;
 
-	color = 0;
-	if (slot.isPlaying().get() || slot.isPlaybackQueued().get()) {
-		color = mkGreen(3);
+	switch (clipStates[idx]) {
+		case 0: // stopped
+			if (clipHasContents[idx]) {
+				upper = mkRed(3);
+				lower = 0;
+			}
+			break;
+		case 1: // playing
+			if (clipHasContents[idx]) {
+				upper = mkGreen(3);
+				lower = mkRed(3);
+			}
+			break;
+		case 2: // recording
+			upper = mkRed(3);
+			lower = mkRed(3);
+			break;
 	}
-	else if (slot.isRecording().get() || slot.isRecordingQueued().get()) {
-		color = mkRed(3);
+
+	if (transport.isPlaying().get() && clipQueued[idx] && !blink) {
+		upper = 0;
 	}
-	else {
-		color = slot.hasContent().get() ? mkRed(3) : 0;
-	}
-	setLED(CC.MIDI1.PAD1 + idx, color);
-	setLED(CC.MIDI1.PAD9 + idx, (channel.isStopped().get() || !channel.exists().get()) ? 0 : mkRed(3));
+
+	setLED(CC.MIDI1.PAD1 + idx, upper);
+	setLED(CC.MIDI1.PAD9 + idx, lower);
 }
 
 function showPagesLEDs()
@@ -386,6 +415,9 @@ function onSysex1(data)
 
 function flush()
 {
+	if (!greeting) {
+		showChannelLEDs();
+	}
 	flushLEDs();
 }
 
