@@ -32,7 +32,7 @@ var CC = {
 		STOP: 0x6D,
 	},
 	MIDI1: {
-		IN_CONTROL: 0x0A,
+		IN_CONTROL: 0x0C,
 
 		PAD1: 0x60,
 		PAD8: 0x67,
