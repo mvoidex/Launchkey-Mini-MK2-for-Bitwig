@@ -422,7 +422,7 @@ function onSysex1(data)
 
 function flush()
 {
-	if (!greeting) {
+	if (!greeting && !pagesShown) {
 		showChannelLEDs();
 	}
 	flushLEDs();
